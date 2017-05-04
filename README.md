@@ -1,7 +1,7 @@
 # eos-model-viewer
 3D model viewer for the eos Morphable Model library
 
-This is a viewer that displays Morphable Models from the eos Morphable Model library (github.com/patrikhuber/eos).
+This is a viewer that displays Morphable Models from the eos Morphable Model library ([github.com/patrikhuber/eos](github.com/patrikhuber/eos)).
 It allows to play around with the shape and colour PCA models as well as the blendshapes.
 
 
