@@ -12,4 +12,6 @@ It allows to play around with the shape and colour PCA models as well as the ble
 It uses the libigl 3D viewer and nanogui.
 The viewer works well, the CMake scripts are somewhat in beta stage - you're on your own compiling it!
 
+Make sure to clone the repository with `--recursive`, or, if already cloned, run `git submodule update --init --recursive`.
+
 The plan is to also offer binaries.
