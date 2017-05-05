@@ -4,6 +4,8 @@
 This is a viewer that displays Morphable Models from the eos Morphable Model library ([github.com/patrikhuber/eos](https://github.com/patrikhuber/eos)).
 It allows to play around with the shape and colour PCA models as well as the blendshapes.
 
+![Demo gif of eos-model-viewer](https://patrikhuber.ch/files/github/eos-model-viewer.gif)
+
 
 ## Build & installation
 
