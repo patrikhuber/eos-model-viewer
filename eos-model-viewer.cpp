@@ -19,6 +19,7 @@
  */
 #include "eos/core/Mesh.hpp"
 #include "eos/morphablemodel/MorphableModel.hpp"
+#include "eos/morphablemodel/io/cvssp.hpp"
 #include "eos/morphablemodel/Blendshape.hpp"
 
 #include <igl/viewer/Viewer.h>
@@ -239,8 +240,12 @@ int main(int argc, char *argv[])
 	{
 		// Todo: We could do the following: If a filename is given via cmdline, then don't open the dialogue!
 		if (model_file.empty())
-			model_file = nanogui::file_dialog({ { "bin", "eos Morphable Model file" } }, false);
-		morphable_model = morphablemodel::load_model(model_file.string()); // try?
+			model_file = nanogui::file_dialog({ { "bin", "eos Morphable Model file" }, { "scm", "scm Morphable Model file" } }, false);
+		if (model_file.extension() == ".scm") {
+			morphable_model = morphablemodel::load_scm_model(model_file.string()); // try?
+		} else {
+			morphable_model = morphablemodel::load_model(model_file.string()); // try?
+		}
 		if (blendshapes_file.empty())
 			blendshapes_file = nanogui::file_dialog({ { "bin", "eos blendshapes file" } }, false);
 		blendshapes = morphablemodel::load_blendshapes(blendshapes_file.string()); // try?
