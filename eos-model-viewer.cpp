@@ -65,9 +65,11 @@ int main(int argc, const char* argv[])
         cxxopts::Options options("eos-model-viewer", "OpenGL viewer for eos's 3D morphable models.");
         // clang-format off
         options.add_options()
-            ("help,h", "display the help message")
-            ("model,m", "an eos 3D Morphable Model stored as cereal BinaryArchive (.bin)", cxxopts::value(model_file))
-            ("blendshapes,b", "an eos file with blendshapes (.bin)", cxxopts::value(blendshapes_file));
+            ("h,help", "display the help message")
+            ("m,model", "an eos 3D Morphable Model stored as cereal BinaryArchive (.bin)",
+                cxxopts::value(model_file))
+            ("b,blendshapes", "an eos file with blendshapes (.bin)",
+                cxxopts::value(blendshapes_file));
         // clang-format on
         const auto result = options.parse(argc, argv);
         if (result.count("help"))
