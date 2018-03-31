@@ -63,10 +63,15 @@ int main(int argc, char* argv[])
     try
     {
         po::options_description desc("Allowed options");
-        desc.add_options()("help,h", "display the help message")(
-            "model,m", po::value<fs::path>(&model_file),
-            "an eos 3D Morphable Model stored as cereal BinaryArchive (.bin)")(
-            "blendshapes,b", po::value<fs::path>(&blendshapes_file), "an eos file with blendshapes (.bin)");
+        // clang-format off
+        desc.add_options()
+            ("help,h",
+                "display the help message")
+            ("model,m", po::value<fs::path>(&model_file),
+                "an eos 3D Morphable Model stored as cereal BinaryArchive (.bin)")
+            ("blendshapes,b", po::value<fs::path>(&blendshapes_file),
+                "an eos file with blendshapes (.bin)");
+        // clang-format on
         po::variables_map vm;
         po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
         if (vm.count("help"))
