@@ -22,8 +22,10 @@
 #include "eos/morphablemodel/io/cvssp.hpp"
 #include "eos/morphablemodel/Blendshape.hpp"
 
-#include <igl/opengl/glfw/Viewer.h>
-#include "nanogui/slider.h"
+#include "igl/opengl/glfw/Viewer.h"
+#include "igl/opengl/glfw/imgui/ImGuiMenu.h"
+#include "igl/opengl/glfw/imgui/ImGuiHelpers.h"
+#include "imgui/imgui.h"
 
 #include "boost/program_options.hpp"
 #include "boost/filesystem.hpp"
@@ -128,7 +130,12 @@ int main(int argc, char* argv[])
     std::vector<float> color_coefficients;
     std::vector<float> blendshape_coefficients;
 
+    // Init the viewer
     igl::opengl::glfw::Viewer viewer;
+
+    // Attach a menu plugin
+    igl::opengl::glfw::imgui::ImGuiMenu menu;
+    viewer.plugins.push_back(&menu);
 
     std::default_random_engine rng;
 
@@ -136,7 +143,7 @@ int main(int argc, char* argv[])
         sliders; // If we want to set the sliders to zero separately, we need separate maps here.
 
     auto add_shape_coefficients_slider = [&sliders, &shape_coefficients, &blendshape_coefficients](
-                                             igl::viewer::Viewer& viewer,
+                                             igl::opengl::glfw::Viewer& viewer,
                                              const morphablemodel::MorphableModel& morphable_model,
                                              const morphablemodel::Blendshapes& blendshapes,
                                              std::vector<float>& coefficients, int coefficient_id,
@@ -187,7 +194,7 @@ int main(int argc, char* argv[])
     };
 
     auto add_blendshapes_coefficients_slider = [&sliders, &shape_coefficients, &blendshape_coefficients](
-                                                   igl::viewer::Viewer& viewer,
+                                                   igl::opengl::glfw::Viewer& viewer,
                                                    const morphablemodel::MorphableModel& morphable_model,
                                                    const morphablemodel::Blendshapes& blendshapes,
                                                    std::vector<float>& coefficients, int coefficient_id,
@@ -239,7 +246,7 @@ int main(int argc, char* argv[])
 
     auto add_color_coefficients_slider =
         [&sliders, &shape_coefficients, &color_coefficients, &blendshape_coefficients](
-            igl::viewer::Viewer& viewer, const morphablemodel::MorphableModel& morphable_model,
+            igl::opengl::glfw::Viewer& viewer, const morphablemodel::MorphableModel& morphable_model,
             const morphablemodel::Blendshapes& blendshapes, std::vector<float>& coefficients,
             int coefficient_id, std::string coefficient_name) {
             nanogui::Widget* panel = new nanogui::Widget(viewer.ngui->window());
