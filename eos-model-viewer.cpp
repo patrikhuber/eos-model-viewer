@@ -3,7 +3,7 @@
  *
  * File: eos-model-viewer.cpp
  *
- * Copyright 2017 Patrik Huber
+ * Copyright 2017, 2018 Patrik Huber
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,9 +93,9 @@ int main(int argc, char* argv[])
         Eigen::MatrixXd V(mesh.vertices.size(), 3);
         for (int i = 0; i < mesh.vertices.size(); ++i)
         {
-            V(i, 0) = mesh.vertices[i].x;
-            V(i, 1) = mesh.vertices[i].y;
-            V(i, 2) = mesh.vertices[i].z;
+            V(i, 0) = mesh.vertices[i](0);
+            V(i, 1) = mesh.vertices[i](1);
+            V(i, 2) = mesh.vertices[i](2);
         }
         return V;
     };
@@ -113,9 +113,9 @@ int main(int argc, char* argv[])
         Eigen::MatrixXd C(mesh.colors.size(), 3);
         for (int i = 0; i < mesh.colors.size(); ++i)
         {
-            C(i, 0) = mesh.colors[i].r;
-            C(i, 1) = mesh.colors[i].g;
-            C(i, 2) = mesh.colors[i].b;
+            C(i, 0) = mesh.colors[i](0);
+            C(i, 1) = mesh.colors[i](1);
+            C(i, 2) = mesh.colors[i](2);
         }
         return C;
     };
