@@ -35,14 +35,6 @@ endif()
 # This allows us to compile in RelWithDebInfo. It'll use the Release-version of OpenCV:
 set_target_properties(${OpenCV_LIBS} PROPERTIES MAP_IMPORTED_CONFIG_RELWITHDEBINFO RELEASE)
 
-if(MSVC)
-  # The standard find_package for boost on Win finds the dynamic libs, so for dynamic linking to boost we need to #define:
-  add_definitions(-DBOOST_ALL_NO_LIB) # Don't use the automatic library linking by boost with VS (#pragma ...). Instead, we specify everything here in cmake.
-  add_definitions(-DBOOST_ALL_DYN_LINK) # Link against the dynamic boost lib - needs to match with the version that find_package finds.
-endif()
-find_package(Boost 1.50.0 COMPONENTS system filesystem program_options REQUIRED)
-message(STATUS "Boost found at ${Boost_INCLUDE_DIRS}")
-
 # Include eos. Todo: We should really rather use an import target approach rather than running add_subdirectory here.
 set(eos_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/eos")
 set(EOS_BUILD_EXAMPLES OFF)
@@ -75,11 +67,11 @@ find_package(LIBIGL REQUIRED QUIET)
 ######### libigl should be set up by now.
 
 # Set up the eos-model-viewer target:
-add_executable(eos-model-viewer eos-model-viewer.cpp)
+add_executable(eos-model-viewer eos-model-viewer.cpp cxxopts.hpp)
 #target_include_directories(eos-model-viewer PRIVATE ${LIBIGL_INCLUDE_DIRS})
 #add_definitions(${LIBIGL_DEFINITIONS})
 target_compile_features(eos-model-viewer PRIVATE ${eos-model-viewer_CXX_COMPILE_FEATURES})
-target_link_libraries(eos-model-viewer eos ${OpenCV_LIBS} ${Boost_LIBRARIES} igl::core igl::opengl_glfw igl::opengl_glfw_imgui)
+target_link_libraries(eos-model-viewer eos ${OpenCV_LIBS} igl::core igl::opengl_glfw igl::opengl_glfw_imgui)
 target_link_libraries(eos-model-viewer "$<$<CXX_COMPILER_ID:GNU>:-pthread>$<$<CXX_COMPILER_ID:Clang>:-pthreads>")
 
 # Install the binary:

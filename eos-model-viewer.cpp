@@ -17,6 +17,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "cxxopts.hpp"
+
 #include "eos/core/Mesh.hpp"
 #include "eos/morphablemodel/MorphableModel.hpp"
 #include "eos/morphablemodel/io/cvssp.hpp"
@@ -27,21 +29,12 @@
 #include "igl/opengl/glfw/imgui/ImGuiHelpers.h"
 #include "imgui/imgui.h"
 
-#include "boost/program_options.hpp"
-#include "boost/filesystem.hpp"
-
 #include <iostream>
 #include <sstream>
 #include <iomanip>
 #include <random>
 //#include <algorithm>
 #include <map>
-
-using namespace eos;
-namespace po = boost::program_options;
-namespace fs = boost::filesystem;
-using std::cout;
-using std::endl;
 
 template <typename T>
 std::string to_string(const T a_value, const int n = 6)
@@ -59,34 +52,32 @@ std::string to_string(const T a_value, const int n = 6)
  * If no model and blendshapes are given via command-line, then a file-open dialog will be presented.
  * If the files are given on the command-line, then no dialog will be presented.
  */
-int main(int argc, char* argv[])
+int main(int argc, const char* argv[])
 {
-    fs::path model_file, blendshapes_file;
+    using namespace eos;
+    using std::string;
+    using std::cout;
+    using std::endl;
+
+    string model_file, blendshapes_file;
     try
     {
-        po::options_description desc("Allowed options");
+        cxxopts::Options options("eos-model-viewer", "OpenGL viewer for eos's 3D morphable models.");
         // clang-format off
-        desc.add_options()
-            ("help,h",
-                "display the help message")
-            ("model,m", po::value<fs::path>(&model_file),
-                "an eos 3D Morphable Model stored as cereal BinaryArchive (.bin)")
-            ("blendshapes,b", po::value<fs::path>(&blendshapes_file),
-                "an eos file with blendshapes (.bin)");
+        options.add_options()
+            ("help,h", "display the help message")
+            ("model,m", "an eos 3D Morphable Model stored as cereal BinaryArchive (.bin)", cxxopts::value(model_file))
+            ("blendshapes,b", "an eos file with blendshapes (.bin)", cxxopts::value(blendshapes_file));
         // clang-format on
-        po::variables_map vm;
-        po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
-        if (vm.count("help"))
+        const auto result = options.parse(argc, argv);
+        if (result.count("help"))
         {
-            cout << "Usage: eos-model-viewer [options]" << endl;
-            cout << desc;
+            cout << options.help() << endl;
             return EXIT_SUCCESS;
         }
-        po::notify(vm);
-    } catch (const po::error& e)
+    } catch (const cxxopts::OptionException& e)
     {
-        cout << "Error while parsing command-line arguments: " << e.what() << endl;
-        cout << "Use --help to display a list of options." << endl;
+        cout << "Error parsing options: " << e.what() << endl;
         return EXIT_FAILURE;
     }
 
