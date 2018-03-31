@@ -22,7 +22,7 @@
 #include "eos/morphablemodel/io/cvssp.hpp"
 #include "eos/morphablemodel/Blendshape.hpp"
 
-#include <igl/viewer/Viewer.h>
+#include <igl/opengl/glfw/Viewer.h>
 #include "nanogui/slider.h"
 
 #include "boost/program_options.hpp"
@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
 	std::vector<float> color_coefficients;
 	std::vector<float> blendshape_coefficients;
 
-	igl::viewer::Viewer viewer;
+	igl::opengl::glfw::Viewer viewer;
 
 	std::default_random_engine rng;
 
@@ -236,7 +236,7 @@ int main(int argc, char *argv[])
 	};
 
 	// Extend viewer menu
-	viewer.callback_init = [&](igl::viewer::Viewer& viewer)
+	viewer.callback_init = [&](igl::opengl::glfw::Viewer& viewer)
 	{
 		// Todo: We could do the following: If a filename is given via cmdline, then don't open the dialogue!
 		if (model_file.empty())
