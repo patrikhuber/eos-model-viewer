@@ -124,6 +124,7 @@ eos::morphablemodel::MorphableModel load_model(std::string model_file, std::stri
 int main(int argc, const char* argv[])
 {
     using namespace eos;
+    using Eigen::VectorXf;
     using std::begin;
     using std::cout;
     using std::end;
@@ -309,16 +310,17 @@ int main(int argc, const char* argv[])
                     mean = mean + expression_model.get_mean();
                 }
             }
-            const auto& num_vertices = mean.rows() / 3;
-            Eigen::Map<Eigen::MatrixXf> mean_reshaped(mean.data(), 3, num_vertices); // Take 3 at a piece, then transpose below
+            const auto num_vertices = mean.rows() / 3;
+            Eigen::Map<Eigen::MatrixXf> mean_reshaped(
+                mean.data(), 3, num_vertices); // Take 3 at a piece, then transpose below
             viewer.data().set_vertices(mean_reshaped.transpose().cast<double>());
             if (morphable_model.get_color_model().get_mean().size() > 0)
             {
                 Eigen::VectorXf color_mean = morphable_model.get_color_model().get_mean();
-                Eigen::Map<Eigen::MatrixXf> color_mean_matrix(
+                Eigen::Map<Eigen::MatrixXf> color_mean_reshaped(
                     color_mean.data(), 3,
                     color_mean.rows() / 3); // Todo: This will fail for gray-level models
-                viewer.data().set_colors(color_mean_matrix.transpose().cast<double>());
+                viewer.data().set_colors(color_mean_reshaped.transpose().cast<double>());
             }
             for_each(begin(shape_coefficients), end(shape_coefficients), [](auto& coeff) { coeff = 0.0f; });
             for_each(begin(color_coefficients), end(color_coefficients), [](auto& coeff) { coeff = 0.0f; });
@@ -439,6 +441,37 @@ int main(int argc, const char* argv[])
                 std::to_string(morphable_model.get_shape_model().get_num_principal_components()) +
                 " coefficients.";
             ImGui::Text(coeffs_displayed.c_str());
+
+            // We've got a shape model. So update the mesh that's been drawn with the value of the
+            // coefficients. Note that we are currently doing this every draw call, not only when the
+            // slider changes. See eos-model-viewer/issues/5.
+            VectorXf shape_instance = morphable_model.get_shape_model().draw_sample(shape_coefficients);
+            const auto num_vertices = morphable_model.get_shape_model().get_data_dimension() / 3;
+            // If expression coeffs are set, add the expression part:
+            if (!expression_coefficients.empty() && morphable_model.has_separate_expression_model())
+            {
+                if (eos::cpp17::holds_alternative<morphablemodel::PcaModel>(
+                        morphable_model.get_expression_model().value()))
+                {
+                    const auto& expression_model = eos::cpp17::get<morphablemodel::PcaModel>(
+                        morphable_model.get_expression_model().value());
+                    const VectorXf expression_instance =
+                        expression_model.draw_sample(expression_coefficients);
+                    shape_instance += expression_instance;
+                } else if (eos::cpp17::holds_alternative<morphablemodel::Blendshapes>(
+                               morphable_model.get_expression_model().value()))
+                {
+                    const auto& blendshapes = eos::cpp17::get<morphablemodel::Blendshapes>(
+                        morphable_model.get_expression_model().value());
+                    for (int i = 0; i < blendshapes.size(); ++i)
+                    {
+                        shape_instance += blendshapes[i].deformation * expression_coefficients[i];
+                    }
+                }
+            }
+            Eigen::Map<Eigen::MatrixXf> shape_instance_reshaped(
+                shape_instance.data(), 3, num_vertices); // Take 3 at a piece, then transpose below
+            viewer.data().set_vertices(shape_instance_reshaped.transpose().cast<double>());
         }
 
         ImGui::End(); // end "Shape PCA" window
@@ -472,6 +505,15 @@ int main(int argc, const char* argv[])
                 std::to_string(morphable_model.get_color_model().get_num_principal_components()) +
                 " coefficients.";
             ImGui::Text(coeffs_displayed.c_str());
+
+            // We've got a colour model. So update the mesh that's been drawn with the value of the
+            // coefficients. Note that we are currently doing this every draw call, not only when the
+            // slider changes. See eos-model-viewer/issues/5.
+            VectorXf color_instance = morphable_model.get_color_model().draw_sample(color_coefficients);
+            const auto num_vertices = morphable_model.get_color_model().get_data_dimension() / 3; // will break for gray-level models!
+            Eigen::Map<Eigen::MatrixXf> color_instance_reshaped(
+                color_instance.data(), 3, num_vertices); // Take 3 at a piece, then transpose below
+            viewer.data().set_colors(color_instance_reshaped.transpose().cast<double>());
         }
 
         ImGui::End(); // end "Colour PCA" window
@@ -522,6 +564,10 @@ int main(int argc, const char* argv[])
             string coeffs_displayed = "Displaying " + std::to_string(num_expression_coeffs_to_display) + "/" +
                                       std::to_string(expression_model_num_coeffs) + " coefficients.";
             ImGui::Text(coeffs_displayed.c_str());
+
+            // We're not updating the mesh here. The identity-update above already updates it, since we update
+            // in each frame, and not just when a slider has moved. As long as we always have an identity
+            // model, this is fine.
         }
 
         ImGui::End(); // end "Expression PCA" window
