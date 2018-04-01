@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.1.3)
 project(eos-model-viewer)
-set(eos-model-viewer_VERSION 0.1.0.alpha)
+set(eos-model-viewer_VERSION 0.2.0.alpha)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
