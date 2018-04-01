@@ -27,10 +27,10 @@ find_package(OpenCV REQUIRED core)
 #version variable is defined from project root's CMakeLists
 if("${OpenCV_VERSION_MAJOR}$" EQUAL 2)
   message(STATUS "OpenCV 2.x detected")
-  find_package(OpenCV 2.4.3 REQUIRED core imgproc highgui)
+  find_package(OpenCV 2.4.3 REQUIRED core)
 elseif("${OpenCV_VERSION_MAJOR}$" EQUAL 3)
   message(STATUS "OpenCV 3.x detected - including imgcodecs for compatibility")
-  find_package(OpenCV 3 REQUIRED core imgproc imgcodecs)
+  find_package(OpenCV 3 REQUIRED core)
 endif()
 # This allows us to compile in RelWithDebInfo. It'll use the Release-version of OpenCV:
 set_target_properties(${OpenCV_LIBS} PROPERTIES MAP_IMPORTED_CONFIG_RELWITHDEBINFO RELEASE)
