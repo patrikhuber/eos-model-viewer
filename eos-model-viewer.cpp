@@ -395,6 +395,7 @@ int main(int argc, const char* argv[])
                 viewer.data().set_colors(get_C(sample));
             }
         }
+        /* // Not yet implemented:
         if (ImGui::Button("Random identity sample", ImVec2(-1, 0)))
         {
         }
@@ -404,6 +405,7 @@ int main(int argc, const char* argv[])
         if (ImGui::Button("Random color sample", ImVec2(-1, 0)))
         {
         }
+        */
         ImGui::InputFloat3("sdev [shp, exp, col]", &random_sample_sdev[0], 2);
         ImGui::End(); // end "Morphable Model" window
 
