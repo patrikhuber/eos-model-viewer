@@ -201,7 +201,7 @@ int main(int argc, const char* argv[])
     {
         try
         {
-            // Loads .bin or .scm model, with or without blendshapes:
+            // Loads a .bin or .scm model, with or without blendshapes:
             morphable_model = load_model(model_file, blendshapes_file);
             const auto& mean = morphable_model.get_mean();
             viewer.data().set_mesh(get_V(mean), get_F(mean));
@@ -230,7 +230,7 @@ int main(int argc, const char* argv[])
     menu.callback_draw_custom_window = [&]() {
         // Load model & draw sample options:
         ImGui::SetNextWindowPos(ImVec2(0.f * menu.menu_scaling(), 585), ImGuiSetCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(240, 240), ImGuiSetCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(240, 280), ImGuiSetCond_FirstUseEver);
         ImGui::Begin("Morphable Model", nullptr, ImGuiWindowFlags_NoSavedSettings);
         if (ImGui::Button("Load Morphable Model", ImVec2(-1, 0)))
         {
@@ -283,7 +283,7 @@ int main(int argc, const char* argv[])
             }
         }
         ImGui::Separator();
-        if (ImGui::Button("Mean", ImVec2(-1, 0)))
+        if (ImGui::Button("Mean (id)", ImVec2(-1, 0)))
         {
             const auto& mean = morphable_model.get_mean();
             viewer.data().set_vertices(get_V(mean));
@@ -296,6 +296,36 @@ int main(int argc, const char* argv[])
             for_each(begin(expression_coefficients), end(expression_coefficients),
                      [](auto& coeff) { coeff = 0.0f; });
         }
+        if (ImGui::Button("Mean (id+exp)", ImVec2(-1, 0)))
+        {
+            Eigen::VectorXf mean = morphable_model.get_shape_model().get_mean();
+            if (morphable_model.has_separate_expression_model())
+            {
+                if (cpp17::holds_alternative<morphablemodel::PcaModel>(
+                        morphable_model.get_expression_model().value()))
+                {
+                    const auto& expression_model =
+                        cpp17::get<morphablemodel::PcaModel>(morphable_model.get_expression_model().value());
+                    mean = mean + expression_model.get_mean();
+                }
+            }
+            const auto& num_vertices = mean.rows() / 3;
+            Eigen::Map<Eigen::MatrixXf> mean_reshaped(mean.data(), 3, num_vertices); // Take 3 at a piece, then transpose below
+            viewer.data().set_vertices(mean_reshaped.transpose().cast<double>());
+            if (morphable_model.get_color_model().get_mean().size() > 0)
+            {
+                Eigen::VectorXf color_mean = morphable_model.get_color_model().get_mean();
+                Eigen::Map<Eigen::MatrixXf> color_mean_matrix(
+                    color_mean.data(), 3,
+                    color_mean.rows() / 3); // Todo: This will fail for gray-level models
+                viewer.data().set_colors(color_mean_matrix.transpose().cast<double>());
+            }
+            for_each(begin(shape_coefficients), end(shape_coefficients), [](auto& coeff) { coeff = 0.0f; });
+            for_each(begin(color_coefficients), end(color_coefficients), [](auto& coeff) { coeff = 0.0f; });
+            for_each(begin(expression_coefficients), end(expression_coefficients),
+                     [](auto& coeff) { coeff = 0.0f; });
+        }
+        ImGui::Separator();
         if (ImGui::Button("Random face sample", ImVec2(-1, 0)))
         {
             // Shape sample:
