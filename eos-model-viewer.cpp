@@ -450,7 +450,8 @@ int main(int argc, const char* argv[])
             VectorXf shape_instance = morphable_model.get_shape_model().draw_sample(shape_coefficients);
             const auto num_vertices = morphable_model.get_shape_model().get_data_dimension() / 3;
             // If expression coeffs are set, add the expression part:
-            if (!expression_coefficients.empty() && morphable_model.has_separate_expression_model() && !display_identity_model_only)
+            if (!expression_coefficients.empty() && morphable_model.has_separate_expression_model() &&
+                !display_identity_model_only)
             {
                 if (eos::cpp17::holds_alternative<morphablemodel::PcaModel>(
                         morphable_model.get_expression_model().value()))
@@ -512,7 +513,8 @@ int main(int argc, const char* argv[])
             // coefficients. Note that we are currently doing this every draw call, not only when the
             // slider changes. See eos-model-viewer/issues/5.
             VectorXf color_instance = morphable_model.get_color_model().draw_sample(color_coefficients);
-            const auto num_vertices = morphable_model.get_color_model().get_data_dimension() / 3; // will break for gray-level models!
+            const auto num_vertices = morphable_model.get_color_model().get_data_dimension() /
+                                      3; // will break for gray-level models!
             Eigen::Map<Eigen::MatrixXf> color_instance_reshaped(
                 color_instance.data(), 3, num_vertices); // Take 3 at a piece, then transpose below
             viewer.data().set_colors(color_instance_reshaped.transpose().cast<double>());
