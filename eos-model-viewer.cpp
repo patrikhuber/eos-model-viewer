@@ -111,9 +111,9 @@ eos::morphablemodel::MorphableModel load_model(std::string model_file, std::stri
     if (!blendshapes_file.empty())
     {
         const auto blendshapes = morphablemodel::load_blendshapes(blendshapes_file);
-        morphable_model =
-            MorphableModel(morphable_model.get_shape_model(), blendshapes, morphable_model.get_color_model(),
-                           morphable_model.get_texture_coordinates());
+        morphable_model = MorphableModel(
+            morphable_model.get_shape_model(), blendshapes, morphable_model.get_color_model(),
+            morphable_model.get_landmark_definitions(), morphable_model.get_texture_coordinates());
     }
     return morphable_model;
 };
@@ -267,7 +267,7 @@ int main(int argc, const char* argv[])
                      << endl;
                 morphable_model = morphablemodel::MorphableModel(
                     morphable_model.get_shape_model(), blendshapes, morphable_model.get_color_model(),
-                    morphable_model.get_texture_coordinates());
+                    morphable_model.get_landmark_definitions(), morphable_model.get_texture_coordinates());
                 const auto& mean = morphable_model.get_mean();
                 viewer.data().clear();
                 viewer.data().set_mesh(get_V(mean), get_F(mean));
