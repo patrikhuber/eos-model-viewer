@@ -223,6 +223,7 @@ int main(int argc, const char* argv[])
     vector<float> shape_coefficients;
     vector<float> color_coefficients;
     vector<float> expression_coefficients;
+    bool display_identity_model_only = true;
 
     std::default_random_engine rng;
     std::array<float, 3> random_sample_sdev = {1.0f, 1.0f, 1.0f}; // shp, exp, col
@@ -253,6 +254,11 @@ int main(int argc, const char* argv[])
             {
                 cout << "Error loading the given model: " << e.what() << endl;
             }
+            if (morphable_model.has_separate_expression_model())
+            {
+                // Just a sensible default - if the loaded model has expressions, use them by default:
+                display_identity_model_only = false;
+            }
         }
         if (ImGui::Button("Load Blendshapes", ImVec2(-1, 0)))
         {
@@ -282,11 +288,35 @@ int main(int argc, const char* argv[])
             {
                 cout << "Error loading the given blendshapes: " << e.what() << endl;
             }
+            display_identity_model_only = false;
         }
         ImGui::Separator();
         if (ImGui::Button("Mean (id)", ImVec2(-1, 0)))
         {
-            const auto& mean = morphable_model.get_mean();
+            Eigen::VectorXf mean = morphable_model.get_shape_model().get_mean();
+            // Take 3 at a piece, then transpose:
+            const auto num_vertices = mean.rows() / 3;
+            Eigen::Map<Eigen::MatrixXf> mean_reshaped(mean.data(), 3, num_vertices);
+            viewer.data().set_vertices(mean_reshaped.transpose().cast<double>());
+
+            if (morphable_model.get_color_model().get_mean().size() > 0)
+            {
+                Eigen::VectorXf color_mean = morphable_model.get_color_model().get_mean();
+                Eigen::Map<Eigen::MatrixXf> color_mean_reshaped(
+                    color_mean.data(), 3,
+                    color_mean.rows() / 3); // Todo: This will fail for gray-level models
+                viewer.data().set_colors(color_mean_reshaped.transpose().cast<double>());
+            }
+
+            for_each(begin(shape_coefficients), end(shape_coefficients), [](auto& coeff) { coeff = 0.0f; });
+            for_each(begin(color_coefficients), end(color_coefficients), [](auto& coeff) { coeff = 0.0f; });
+            for_each(begin(expression_coefficients), end(expression_coefficients),
+                     [](auto& coeff) { coeff = 0.0f; });
+            display_identity_model_only = true;
+        }
+        if (ImGui::Button("Mean (id+exp)", ImVec2(-1, 0)))
+        {
+            const auto mean = morphable_model.get_mean();
             viewer.data().set_vertices(get_V(mean));
             if (!mean.colors.empty())
             {
@@ -296,36 +326,7 @@ int main(int argc, const char* argv[])
             for_each(begin(color_coefficients), end(color_coefficients), [](auto& coeff) { coeff = 0.0f; });
             for_each(begin(expression_coefficients), end(expression_coefficients),
                      [](auto& coeff) { coeff = 0.0f; });
-        }
-        if (ImGui::Button("Mean (id+exp)", ImVec2(-1, 0)))
-        {
-            Eigen::VectorXf mean = morphable_model.get_shape_model().get_mean();
-            if (morphable_model.has_separate_expression_model())
-            {
-                if (cpp17::holds_alternative<morphablemodel::PcaModel>(
-                        morphable_model.get_expression_model().value()))
-                {
-                    const auto& expression_model =
-                        cpp17::get<morphablemodel::PcaModel>(morphable_model.get_expression_model().value());
-                    mean = mean + expression_model.get_mean();
-                }
-            }
-            const auto num_vertices = mean.rows() / 3;
-            Eigen::Map<Eigen::MatrixXf> mean_reshaped(
-                mean.data(), 3, num_vertices); // Take 3 at a piece, then transpose below
-            viewer.data().set_vertices(mean_reshaped.transpose().cast<double>());
-            if (morphable_model.get_color_model().get_mean().size() > 0)
-            {
-                Eigen::VectorXf color_mean = morphable_model.get_color_model().get_mean();
-                Eigen::Map<Eigen::MatrixXf> color_mean_reshaped(
-                    color_mean.data(), 3,
-                    color_mean.rows() / 3); // Todo: This will fail for gray-level models
-                viewer.data().set_colors(color_mean_reshaped.transpose().cast<double>());
-            }
-            for_each(begin(shape_coefficients), end(shape_coefficients), [](auto& coeff) { coeff = 0.0f; });
-            for_each(begin(color_coefficients), end(color_coefficients), [](auto& coeff) { coeff = 0.0f; });
-            for_each(begin(expression_coefficients), end(expression_coefficients),
-                     [](auto& coeff) { coeff = 0.0f; });
+            display_identity_model_only = false;
         }
         ImGui::Separator();
         if (ImGui::Button("Random face sample", ImVec2(-1, 0)))
@@ -409,6 +410,7 @@ int main(int argc, const char* argv[])
         }
         */
         ImGui::InputFloat3("sdev [shp, exp, col]", &random_sample_sdev[0], 2);
+        ImGui::Checkbox("Identity model only", &display_identity_model_only);
         ImGui::End(); // end "Morphable Model" window
 
         // PCA shape coefficients:
@@ -448,7 +450,7 @@ int main(int argc, const char* argv[])
             VectorXf shape_instance = morphable_model.get_shape_model().draw_sample(shape_coefficients);
             const auto num_vertices = morphable_model.get_shape_model().get_data_dimension() / 3;
             // If expression coeffs are set, add the expression part:
-            if (!expression_coefficients.empty() && morphable_model.has_separate_expression_model())
+            if (!expression_coefficients.empty() && morphable_model.has_separate_expression_model() && !display_identity_model_only)
             {
                 if (eos::cpp17::holds_alternative<morphablemodel::PcaModel>(
                         morphable_model.get_expression_model().value()))
