@@ -63,7 +63,7 @@ option(LIBIGL_WITH_TRIANGLE          "Use Triangle"       OFF)
 option(LIBIGL_WITH_VIEWER            "Use OpenGL viewer"  ON)
 option(LIBIGL_WITH_XML               "Use XML"            OFF)
 
-find_package(LIBIGL REQUIRED QUIET)
+find_package(LIBIGL REQUIRED)
 ######### libigl should be set up by now.
 
 # Set up the eos-model-viewer target:
