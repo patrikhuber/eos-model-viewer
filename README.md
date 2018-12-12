@@ -9,14 +9,12 @@ It allows to play around with the shape and colour PCA models as well as the ble
 
 ## Build & installation
 
-It uses the libigl 3D viewer and nanogui.
+It uses libigl's 3D viewer.
 
 **Note:** The viewer works well, but the code is not very polished and will crash if you do unexpected things (e.g. cancel the loading dialogues).
 The CMake scripts are in serious alpha-stage - You are on your own compiling it!
 
 Make sure to clone the repository with `--recursive`, or, if already cloned, run `git submodule update --init --recursive`.
-
-There is a Windows binary in the Releases section which may or may not work on other systems, none exists for Linux yet.
 
 ## Running the viewer
 
